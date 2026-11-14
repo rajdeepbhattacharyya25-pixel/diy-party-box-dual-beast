@@ -1,0 +1,19 @@
+node_modules/
+build/
+dist/
+coverage/
+.playwright-cli/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# IDE & agent cache
+.antigravity/
+.aistudio/
+archives/
+memory_slots/
+shared_memories/
+.vscode/
+
+

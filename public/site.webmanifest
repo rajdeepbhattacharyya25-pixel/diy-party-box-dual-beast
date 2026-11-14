@@ -1,0 +1,27 @@
+{
+  "name": "dualbeast — Two Speakers. One Powerful Experience.",
+  "short_name": "dualbeast",
+  "description": "Two Speakers. One Powerful Experience. Hand-built wireless stereo speakers with ESP32 WLED lighting, INMP441 microphone, and side passive radiators.",
+  "start_url": "/dualbeast",
+  "display": "standalone",
+  "background_color": "#050816",
+  "theme_color": "#050816",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
