@@ -69,7 +69,7 @@ export default function CollagePlateMedia({
         src={item.imageSrc}
         alt={item.partName}
         decoding="async"
-        loading="lazy"
+        loading="eager"
         referrerPolicy="no-referrer"
         className={`w-full h-full object-center transition-transform duration-500 ${
           isThreeQuarterDims

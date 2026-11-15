@@ -779,10 +779,10 @@ export default function PinnedKineticStage() {
   const activeSceneObj =
     DIY_PARTY_BOX_SCENES[nearestSceneIdx >= 6 ? 5 : Math.min(4, nearestSceneIdx)];
 
-  // Ensure document.title is always cleanly set to DualBeast
+  // Ensure document.title is always cleanly set to DualBeast — Two Speakers. One Powerful Experience.
   useEffect(() => {
     if (typeof document !== 'undefined') {
-      document.title = 'DualBeast';
+      document.title = 'DualBeast — Two Speakers. One Powerful Experience.';
     }
   }, []);
 

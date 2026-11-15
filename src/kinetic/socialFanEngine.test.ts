@@ -34,7 +34,7 @@ test('Card 01 uses the real uploaded profile photo and THE BUILDER identity labe
   assert.equal(profile.imageSrc, CREATOR_PROFILE_IMAGE_SRC);
   assert.equal(
     profile.imageSrc,
-    '/assets/aistudio/Thoughtful_Mirror_Selfie_on_a_Patterned_Bed_b6d8f347.png'
+    '/assets/aistudio/Thoughtful_Mirror_Selfie_on_a_Patterned_Bed_b6d8f347.webp'
   );
 });
 

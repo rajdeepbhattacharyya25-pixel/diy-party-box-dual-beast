@@ -437,7 +437,7 @@ export default function SocialFanShowcaseSection({
                       src={card.imageSrc}
                       alt={card.imageAlt || card.title}
                       decoding="async"
-                      loading="lazy"
+                      loading="eager"
                       referrerPolicy="no-referrer"
                       draggable={false}
                       className="absolute inset-0 w-full h-full object-cover object-top"

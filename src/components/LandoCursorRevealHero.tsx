@@ -713,8 +713,8 @@ export default function LandoCursorRevealHero({
             <img
               src={
                 visualMode === 'photo'
-                  ? '/assets/aistudio/R_front_ac80fc12.jpeg'
-                  : '/assets/renders/hero_speaker_default_white.png'
+                  ? '/assets/aistudio/R_front_ac80fc12.webp'
+                  : '/assets/renders/hero_speaker_default_white.webp'
               }
               width={781}
               height={1491}
@@ -861,12 +861,12 @@ export default function LandoCursorRevealHero({
                   srcSet="/assets/renders/hero_speaker_xray_aligned.webp"
                 />
                 <img
-                  src="/assets/renders/hero_speaker_xray_aligned.png"
+                  src="/assets/renders/hero_speaker_xray_aligned.webp"
                   width={781}
                   height={1491}
                   alt="Cutaway view showing the speaker drivers and LED ring layout"
                   decoding="async"
-                  loading="lazy"
+                  loading="eager"
                   data-testid="hero-xray-speaker-img"
                   className="w-full h-full object-fill rounded-[10px] shadow-[0_0_40px_rgba(59,130,246,0.45)]"
                 />

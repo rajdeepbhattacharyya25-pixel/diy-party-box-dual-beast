@@ -171,7 +171,7 @@ export const COLLAGE_PART_ITEMS: CollagePartItem[] = [
     modalFooterLabel: 'SYSTEM',
     metric: '16-LED Ring · ESP32 · WLED',
     dimensionsSpec: '16-LED Ring · ESP32 · WLED',
-    imageSrc: '/assets/aistudio/image_754baafc.png',
+    imageSrc: '/assets/aistudio/image_754baafc.webp',
     aspectRatioClass: 'aspect-[3/4]',
     sizeVariant: 'md',
     parallaxSpeed: 1.0,
@@ -204,7 +204,7 @@ export const COLLAGE_PART_ITEMS: CollagePartItem[] = [
     modalFooterLabel: 'ENCLOSURE',
     metric: '15 × 14.7 × 27.5 cm · MDF Cabinet',
     dimensionsSpec: 'Width: 15 cm · Depth: 14.7 cm · Height: 27.5 cm · Ø 7 cm & Ø 5 cm',
-    imageSrc: '/assets/aistudio/Black_Three-Quarter_Speaker_Cabinet_cd34b97a.png',
+    imageSrc: '/assets/aistudio/Black_Three-Quarter_Speaker_Cabinet_cd34b97a.webp',
     aspectRatioClass: 'aspect-[4/3]',
     sizeVariant: 'lg',
     parallaxSpeed: 1.01,
@@ -237,7 +237,7 @@ export const COLLAGE_PART_ITEMS: CollagePartItem[] = [
     modalFooterLabel: 'ACOUSTICS',
     metric: '2 Passive Radiators · 1 Per Speaker',
     dimensionsSpec: '2 Passive Radiators · ~5 cm Side Clearance',
-    imageSrc: '/assets/aistudio/Matte_Black_Speaker_Texture_Edit_10e0e5ac.png',
+    imageSrc: '/assets/aistudio/Matte_Black_Speaker_Texture_Edit_10e0e5ac.webp',
     aspectRatioClass: 'aspect-[4/3]',
     sizeVariant: 'lg',
     parallaxSpeed: 0.99,
@@ -283,7 +283,7 @@ export const COLLAGE_PART_ITEMS: CollagePartItem[] = [
     modalFooterLabel: 'REAR I/O',
     metric: '6000 mAh · USB-C · 12V DC · 2 Buttons',
     dimensionsSpec: '6000 mAh Battery · USB-C · 12V DC · ESP32 Port',
-    imageSrc: '/assets/aistudio/image_3dcce302.png',
+    imageSrc: '/assets/aistudio/image_3dcce302.webp',
     aspectRatioClass: 'aspect-[3/2]',
     sizeVariant: 'lg',
     parallaxSpeed: 1.01,
@@ -320,7 +320,7 @@ export const COLLAGE_PART_ITEMS: CollagePartItem[] = [
     modalFooterLabel: 'CONTROLS',
     metric: 'Capacitive Touch · Bluetooth · NFC · L+R Pairing',
     dimensionsSpec: 'Touch Pads · Bluetooth · NFC · L+R Stereo Link',
-    imageSrc: '/assets/aistudio/image_8ee5c56b.png',
+    imageSrc: '/assets/aistudio/image_8ee5c56b.webp',
     aspectRatioClass: 'aspect-[4/3]',
     sizeVariant: 'md',
     parallaxSpeed: 1.0,
@@ -375,7 +375,7 @@ export const SPLIT_REVEAL_PHOTO_SRC =
   '/assets/aistudio/RGB_Speaker_Duo_on_a_Festive_Balcony_Desk_016b6e98.webp';
 
 export const SPLIT_COMPONENTS_BG_SRC =
-  '/assets/aistudio/L_back_components_b6c8f3c6.jpeg';
+  '/assets/aistudio/L_back_components_b6c8f3c6.webp';
 
 export interface SpeakerComponentSpecItem {
   indexLabel: string;
@@ -485,9 +485,6 @@ export const SPEAKER_COMPONENTS_USED: readonly SpeakerComponentSpecItem[] = [
 
 export const CORE_PRELOAD_IMAGES: string[] = [
   '/assets/renders/hero_speaker_default_white.webp',
-];
-
-export const SECONDARY_WARMUP_IMAGES: string[] = [
   '/assets/renders/hero_speaker_xray_aligned.webp',
   '/assets/aistudio/image_754baafc.webp',
   '/assets/aistudio/Black_Three-Quarter_Speaker_Cabinet_cd34b97a.webp',
@@ -495,11 +492,14 @@ export const SECONDARY_WARMUP_IMAGES: string[] = [
   '/assets/aistudio/image_3dcce302.webp',
   '/assets/aistudio/image_8ee5c56b.webp',
   '/assets/aistudio/Twisted_Wire_Microphone_Module_619dfaa8.webp',
-  '/assets/aistudio/Thoughtful_Mirror_Selfie_on_a_Patterned_Bed_b6d8f347.webp',
-  '/assets/aistudio/L_back_components_b6c8f3c6.webp',
   SPLIT_REVEAL_PHOTO_SRC,
+  SPLIT_COMPONENTS_BG_SRC,
+  '/assets/aistudio/Thoughtful_Mirror_Selfie_on_a_Patterned_Bed_b6d8f347.webp',
   '/assets/renders/turntable/R_ring_16.webp',
   '/assets/renders/turntable/L_ring_16.webp',
+];
+
+export const SECONDARY_WARMUP_IMAGES: string[] = [
   '/speaker-gallery/poster-01.jpg',
   '/speaker-gallery/poster-02.jpg',
   '/speaker-gallery/poster-03.jpg',

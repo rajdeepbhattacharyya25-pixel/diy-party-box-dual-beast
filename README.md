@@ -6,7 +6,7 @@
 <p align="center"><strong>Two Speakers. One Powerful Experience.</strong></p>
 
 <p align="center">
-  <a href="https://ais-pre-edsqprhsgz4rauczxcnnro-333090817686.asia-southeast1.run.app/dualbeast">
+  <a href="https://dualbeast.vercel.app/DualBeast">
     <img src="https://img.shields.io/badge/Live_Website-dualbeast-3B5BFF?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Live Website — dualbeast" />
   </a>
   <a href="https://react.dev">
@@ -23,8 +23,8 @@
 
 ## 🌐 Live Showcase
 
-- **Production URL:** [https://ais-pre-edsqprhsgz4rauczxcnnro-333090817686.asia-southeast1.run.app/dualbeast](https://ais-pre-edsqprhsgz4rauczxcnnro-333090817686.asia-southeast1.run.app/dualbeast)
-- **Canonical Route:** `/dualbeast`
+- **Production URL:** [DualBeast](https://dualbeast.vercel.app/DualBeast)
+- **Canonical Route:** `/DualBeast`
 - **Tagline:** *Two Speakers. One Powerful Experience.*
 
 ---

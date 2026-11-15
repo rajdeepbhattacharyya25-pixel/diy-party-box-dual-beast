@@ -49,30 +49,17 @@ export function warmupAllSceneImages(): void {
     void preloadSingleImage(src);
   });
 
-  // Secondary images warmed up ONLY during idle time after window loads or curtain completion
+  // Secondary images (gallery modals & turntable) preloaded in background immediately after initial paint
   const triggerSecondary = () => {
-    if (typeof window.requestIdleCallback === 'function') {
-      window.requestIdleCallback(
-        () => {
-          SECONDARY_WARMUP_IMAGES.forEach((src) => {
-            void preloadSingleImage(src);
-          });
-        },
-        { timeout: 4000 }
-      );
-    } else {
-      window.setTimeout(() => {
-        SECONDARY_WARMUP_IMAGES.forEach((src) => {
-          void preloadSingleImage(src);
-        });
-      }, 1500);
-    }
+    SECONDARY_WARMUP_IMAGES.forEach((src) => {
+      void preloadSingleImage(src);
+    });
   };
 
   if (document.readyState === 'complete') {
-    triggerSecondary();
+    window.setTimeout(triggerSecondary, 100);
   } else {
-    window.addEventListener('load', triggerSecondary, { once: true });
+    window.addEventListener('load', () => window.setTimeout(triggerSecondary, 100), { once: true });
   }
 }
 

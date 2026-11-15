@@ -2383,7 +2383,7 @@ function SplitIncomingColumn({
                         : ''
                     }
                     decoding="async"
-                    loading="lazy"
+                    loading="eager"
                     draggable={false}
                     data-testid={isLeft ? 'revealed-balcony-duo-photo' : undefined}
                     className="h-full w-full object-cover object-center select-none"
@@ -2485,7 +2485,7 @@ function SplitIncomingColumn({
                         : ''
                     }
                     decoding="async"
-                    loading="lazy"
+                    loading="eager"
                     draggable={false}
                     className="h-full w-full object-cover object-center opacity-35 select-none"
                   />

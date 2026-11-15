@@ -189,7 +189,7 @@ test('Horizontal Floating Editorial Canvas includes 6 clean plates (sketch cards
 
   // Both studio speaker renders carry the exact CAD diagram modes and specs
   const tqCard = COLLAGE_PART_ITEMS.find((i) => i.id === 'mdf-chassis-dimensions')!;
-  assert.equal(tqCard.imageSrc, '/assets/aistudio/Black_Three-Quarter_Speaker_Cabinet_cd34b97a.png');
+  assert.equal(tqCard.imageSrc, '/assets/aistudio/Black_Three-Quarter_Speaker_Cabinet_cd34b97a.webp');
   assert.equal(tqCard.diagramOverlay, 'three-quarter-dims');
   assert.ok(tqCard.dimensionsSpec?.includes('15 cm'));
   assert.ok(tqCard.dimensionsSpec?.includes('14.7 cm'));
@@ -198,7 +198,7 @@ test('Horizontal Floating Editorial Canvas includes 6 clean plates (sketch cards
   assert.ok(tqCard.dimensionsSpec?.includes('5 cm'));
 
   const dualPrCard = COLLAGE_PART_ITEMS.find((i) => i.id === 'dual-passive-radiators')!;
-  assert.equal(dualPrCard.imageSrc, '/assets/aistudio/Matte_Black_Speaker_Texture_Edit_10e0e5ac.png');
+  assert.equal(dualPrCard.imageSrc, '/assets/aistudio/Matte_Black_Speaker_Texture_Edit_10e0e5ac.webp');
   assert.equal(dualPrCard.diagramOverlay, 'dual-passive-radiator');
 
   // Verify feature detail modals use content-driven, non-repetitive section headings

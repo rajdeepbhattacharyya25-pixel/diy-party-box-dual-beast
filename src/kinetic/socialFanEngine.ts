@@ -38,7 +38,7 @@ export const SOCIAL_ACCOUNT_LINKS = {
 } as const;
 
 export const CREATOR_PROFILE_IMAGE_SRC =
-  '/assets/aistudio/Thoughtful_Mirror_Selfie_on_a_Patterned_Bed_b6d8f347.png';
+  '/assets/aistudio/Thoughtful_Mirror_Selfie_on_a_Patterned_Bed_b6d8f347.webp';
 
 export const SOCIAL_JOURNEY_CAPTION = {
   heading: 'FOLLOW MY JOURNEY.',
