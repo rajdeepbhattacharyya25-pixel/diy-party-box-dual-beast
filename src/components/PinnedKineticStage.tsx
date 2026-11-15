@@ -224,6 +224,11 @@ export default function PinnedKineticStage() {
     Boolean(window.matchMedia?.('(pointer: coarse)').matches)
   );
 
+  const prefersReducedMotion =
+    typeof window !== 'undefined' &&
+    Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+  const isNavigatingRef = useRef<boolean>(false);
+
   // Interactive UI states within the pinned scenes
   const [visualMode] = useState<VisualRenderMode>('render');
   const [show3DModal, setShow3DModal] = useState<boolean>(false);
@@ -265,8 +270,83 @@ export default function PinnedKineticStage() {
     rafIdRef.current = requestAnimationFrame(tick);
   }, []);
 
+  const smoothAnimateToTimeline = useCallback(
+    (nextTarget: number, durationMs?: number) => {
+      if (endSnapTimerRef.current !== null) {
+        window.clearTimeout(endSnapTimerRef.current);
+        endSnapTimerRef.current = null;
+      }
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+
+      const clamped = Math.max(
+        0,
+        Math.min(maxTimelinePos, Number(nextTarget.toFixed(4)))
+      );
+      targetTimelineRef.current = clamped;
+      const startPos = currentTimelineRef.current;
+      const distance = clamped - startPos;
+
+      if (Math.abs(distance) < 0.005) {
+        currentTimelineRef.current = clamped;
+        setTimelinePos(clamped);
+        isNavigatingRef.current = false;
+        return;
+      }
+
+      isNavigatingRef.current = true;
+      // Duration scaled smoothly: ~1.1s for full 8.1 units rewind; minimum 650ms, maximum 1250ms
+      const duration =
+        durationMs ??
+        (prefersReducedMotion
+          ? 200
+          : Math.min(1250, Math.max(650, Math.abs(distance) * 135)));
+
+      const startTime = performance.now();
+
+      const tick = (nowMs: number) => {
+        const elapsed = nowMs - startTime;
+        const progress = Math.min(1, Math.max(0, elapsed / duration));
+        // Standard smooth cubic ease-in-out curve
+        const eased =
+          progress < 0.5
+            ? 4 * progress * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        const next = Number((startPos + distance * eased).toFixed(4));
+
+        currentTimelineRef.current = next;
+        setTimelinePos(next);
+
+        if (progress < 1) {
+          rafIdRef.current = requestAnimationFrame(tick);
+        } else {
+          currentTimelineRef.current = clamped;
+          setTimelinePos(clamped);
+          rafIdRef.current = null;
+          isNavigatingRef.current = false;
+
+          // Single clean history update on arrival
+          const targetSceneIdx = Math.round(clamped);
+          const targetHash = targetSceneIdx === 0 ? '' : `#${SECTION_HASH_BY_SCENE_INDEX[targetSceneIdx] || ''}`;
+          if (typeof window !== 'undefined') {
+            window.history.replaceState(
+              null,
+              '',
+              `/DualBeast${window.location.search}${targetHash}`
+            );
+          }
+        }
+      };
+
+      rafIdRef.current = requestAnimationFrame(tick);
+    },
+    [maxTimelinePos, prefersReducedMotion]
+  );
+
   const animateToTimeline = useCallback(
-    (nextTarget: number, immediate = false) => {
+    (nextTarget: number, immediate = false, durationMs?: number) => {
       if (endSnapTimerRef.current !== null) {
         window.clearTimeout(endSnapTimerRef.current);
         endSnapTimerRef.current = null;
@@ -276,27 +356,45 @@ export default function PinnedKineticStage() {
         Math.min(maxTimelinePos, Number(nextTarget.toFixed(4)))
       );
       targetTimelineRef.current = clamped;
-      const targetSceneIdx = Math.round(clamped);
-      const targetHash = SECTION_HASH_BY_SCENE_INDEX[targetSceneIdx];
-      if (targetHash && typeof window !== 'undefined') {
-        window.history.replaceState(
-          null,
-          '',
-          `/dualbeast${window.location.search}#${targetHash}`
-        );
-      }
+
       if (immediate) {
         if (rafIdRef.current !== null) {
           cancelAnimationFrame(rafIdRef.current);
           rafIdRef.current = null;
         }
+        isNavigatingRef.current = false;
         currentTimelineRef.current = clamped;
         setTimelinePos(clamped);
+        const targetSceneIdx = Math.round(clamped);
+        const targetHash = targetSceneIdx === 0 ? '' : `#${SECTION_HASH_BY_SCENE_INDEX[targetSceneIdx] || ''}`;
+        if (typeof window !== 'undefined') {
+          window.history.replaceState(
+            null,
+            '',
+            `/DualBeast${window.location.search}${targetHash}`
+          );
+        }
+        return;
+      }
+
+      // For large jumps (like Back to Top, Footer jump, or cross-chapter navigation), use smooth cubic glide!
+      const distance = Math.abs(clamped - currentTimelineRef.current);
+      if (distance > 0.5 || durationMs !== undefined) {
+        smoothAnimateToTimeline(clamped, durationMs);
       } else {
+        const targetSceneIdx = Math.round(clamped);
+        const targetHash = targetSceneIdx === 0 ? '' : `#${SECTION_HASH_BY_SCENE_INDEX[targetSceneIdx] || ''}`;
+        if (typeof window !== 'undefined') {
+          window.history.replaceState(
+            null,
+            '',
+            `/DualBeast${window.location.search}${targetHash}`
+          );
+        }
         startSmoothingLoop();
       }
     },
-    [maxTimelinePos, startSmoothingLoop]
+    [maxTimelinePos, smoothAnimateToTimeline, startSmoothingLoop]
   );
 
   const scheduleEndCorridorSnap = useCallback(() => {
@@ -395,6 +493,14 @@ export default function PinnedKineticStage() {
       }
 
       e.preventDefault();
+      if (isNavigatingRef.current) {
+        if (rafIdRef.current !== null) {
+          cancelAnimationFrame(rafIdRef.current);
+          rafIdRef.current = null;
+        }
+        isNavigatingRef.current = false;
+        targetTimelineRef.current = currentTimelineRef.current;
+      }
       if (Math.abs(e.deltaY) > 0.1) {
         lastScrollDirRef.current = e.deltaY > 0 ? 1 : -1;
       }
@@ -507,6 +613,15 @@ export default function PinnedKineticStage() {
       e.touches.length === 0
     )
       return;
+
+    if (isNavigatingRef.current) {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+      isNavigatingRef.current = false;
+      targetTimelineRef.current = currentTimelineRef.current;
+    }
 
     const targetEl = e.target as HTMLElement | null;
     touchScrollRegionRef.current =
@@ -664,20 +779,23 @@ export default function PinnedKineticStage() {
   const activeSceneObj =
     DIY_PARTY_BOX_SCENES[nearestSceneIdx >= 6 ? 5 : Math.min(4, nearestSceneIdx)];
 
-  // Keep URL path (/dualbeast) and hash synchronized as wheel/touch scrolling moves between pinned sections
+  // Ensure document.title is always cleanly set to DualBeast
   useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.title = 'DualBeast';
+    }
+  }, []);
+
+  // Keep URL path (/DualBeast) and hash synchronized as wheel/touch scrolling moves between pinned sections
+  useEffect(() => {
+    if (isNavigatingRef.current) return;
     if (typeof window !== 'undefined') {
-      const expectedHash = `#${activeAnchorId}`;
-      const expectedPath = '/dualbeast';
-      if (
-        window.location.pathname !== expectedPath ||
-        window.location.hash !== expectedHash
-      ) {
-        window.history.replaceState(
-          null,
-          '',
-          `${expectedPath}${window.location.search}${expectedHash}`
-        );
+      const expectedHash = activeAnchorId === 'the-story' ? '' : `#${activeAnchorId}`;
+      const expectedPath = '/DualBeast';
+      const expectedUrl = `${expectedPath}${window.location.search}${expectedHash}`;
+      const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      if (currentUrl !== expectedUrl) {
+        window.history.replaceState(null, '', expectedUrl);
       }
     }
   }, [activeAnchorId]);
@@ -698,9 +816,6 @@ export default function PinnedKineticStage() {
   };
 
   const chapterBg = getChapterBackgroundStyle(timelinePos);
-  const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   const zoomState = getContinuousSpeakerZoomState(
     timelinePos,
     viewportSize.width,

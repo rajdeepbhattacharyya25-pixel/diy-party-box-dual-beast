@@ -9,6 +9,8 @@ coverage/
 !.env.example
 
 # IDE & agent cache
+.agents/
+.agent/
 .antigravity/
 .aistudio/
 archives/

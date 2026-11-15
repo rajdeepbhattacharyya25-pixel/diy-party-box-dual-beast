@@ -150,14 +150,14 @@ export default function CobaltPreloaderCurtain({
     };
   }, [bypass]);
 
-  // Uniform authentic preloader timing for all visitors
-  const minDisplayMs = prefersReducedMotion ? 100 : 150;
+  // Uniform authentic preloader timing for all visitors (1.5s authentic showcase)
+  const minDisplayMs = prefersReducedMotion ? 300 : 1500;
   const displayState = getPreloaderDisplayState(
     loadedCount,
     totalAssets,
     elapsedMs,
     minDisplayMs,
-    2500
+    3000
   );
 
   useEffect(() => {
@@ -184,7 +184,7 @@ export default function CobaltPreloaderCurtain({
     <div
       role="status"
       aria-live="polite"
-      aria-label={`Loading dualbeast — Two Speakers. One Powerful Experience.: ${displayState.formattedPercent}`}
+      aria-label={`Loading DualBeast — Two Speakers. One Powerful Experience.: ${displayState.formattedPercent}`}
       data-testid="cobalt-preloader-curtain"
       data-preloader-phase={phase}
       className="fixed inset-0 z-[100] flex flex-col items-center justify-between px-8 py-10 text-white select-none overflow-hidden will-change-[transform,opacity]"
