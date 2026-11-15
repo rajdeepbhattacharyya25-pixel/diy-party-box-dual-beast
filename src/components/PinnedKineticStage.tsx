@@ -39,7 +39,7 @@ import {
   MOBILE_CHAPTER_WAYPOINTS,
   TouchVelocitySample,
 } from '../kinetic/editorialStages';
-import { ChevronUp, ChevronDown, QrCode } from 'lucide-react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 
 interface PrecomputedHeadline {
   headline: string;
@@ -1231,21 +1231,6 @@ export default function PinnedKineticStage() {
                 DUALBEAST
               </span>
             </div>
-
-            {/* Right: Themed QR Code / Share Card Button */}
-            <button
-              type="button"
-              onClick={() => setShowQrModal(true)}
-              data-testid="open-qr-card-btn"
-              aria-label="Open Themed QR Code Card"
-              className="pointer-events-auto group flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full border border-[#3B5BFF]/40 hover:border-[#3B5BFF]/90 bg-[#070B19]/85 hover:bg-[#0E1538]/95 backdrop-blur-md shadow-[0_4px_20px_rgba(59,91,255,0.25)] transition-all cursor-pointer active:scale-95"
-            >
-              <QrCode className="w-3.5 h-3.5 text-[#93C5FD] transition-transform duration-200 group-hover:scale-110" />
-              <span className="font-mono text-[10px] sm:text-xs font-semibold tracking-wider uppercase text-white/95 group-hover:text-white">
-                QR Card
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            </button>
           </header>
         )}
 
