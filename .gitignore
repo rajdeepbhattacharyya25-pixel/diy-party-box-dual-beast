@@ -18,4 +18,8 @@ memory_slots/
 shared_memories/
 .vscode/
 
+# Nested OpenScreen repo
+openscreen/
+
+
 

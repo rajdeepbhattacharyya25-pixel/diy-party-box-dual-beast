@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
+  INSTAGRAM_JOURNEY_HIGHLIGHT_URL,
   SOCIAL_ACCOUNT_LINKS,
   SOCIAL_FAN_CARDS,
   SOCIAL_JOURNEY_CAPTION,
@@ -1058,17 +1059,37 @@ export default function SocialFanShowcaseSection({
                     { label: 'WLED Studio', onClick: onOpenWledStudio, testId: 'footer-nav-wled' },
                     { label: 'Build Overview', onClick: onJumpToBuildOverview, testId: 'footer-nav-overview' },
                     { label: 'Parts List', onClick: onBackToPartsList, testId: 'footer-nav-parts' },
+                    {
+                      label: 'Build Journey (Stories)',
+                      href: INSTAGRAM_JOURNEY_HIGHLIGHT_URL,
+                      testId: 'footer-nav-journey',
+                    },
                   ].map((item) => (
                     <li key={item.testId}>
-                      <button
-                        type="button"
-                        tabIndex={footerInteractive ? 0 : -1}
-                        onClick={item.onClick}
-                        data-testid={item.testId}
-                        className="inline-flex items-center py-1 max-md:min-h-[40px] text-left text-xs sm:text-[13px] text-white/80 hover:text-[#93C5FD] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#93C5FD] rounded transition-colors cursor-pointer whitespace-nowrap"
-                      >
-                        {item.label}
-                      </button>
+                      {item.href ? (
+                        <a
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          tabIndex={footerInteractive ? 0 : -1}
+                          data-testid={item.testId}
+                          title="Click here to view the entire journey on Instagram"
+                          className="group inline-flex items-center gap-1 py-1 max-md:min-h-[40px] text-left text-xs sm:text-[13px] text-white/80 hover:text-[#93C5FD] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#93C5FD] rounded transition-colors whitespace-nowrap"
+                        >
+                          <span>{item.label}</span>
+                          <ArrowUpRight className="w-3 h-3 text-[#93C5FD]/65 group-hover:text-[#93C5FD] transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" />
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          tabIndex={footerInteractive ? 0 : -1}
+                          onClick={item.onClick}
+                          data-testid={item.testId}
+                          className="inline-flex items-center py-1 max-md:min-h-[40px] text-left text-xs sm:text-[13px] text-white/80 hover:text-[#93C5FD] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#93C5FD] rounded transition-colors cursor-pointer whitespace-nowrap"
+                        >
+                          {item.label}
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -1085,6 +1106,11 @@ export default function SocialFanShowcaseSection({
                       label: 'Instagram',
                       href: SOCIAL_ACCOUNT_LINKS.instagram,
                       testId: 'footer-social-instagram',
+                    },
+                    {
+                      label: 'Story Highlights',
+                      href: INSTAGRAM_JOURNEY_HIGHLIGHT_URL,
+                      testId: 'footer-social-stories',
                     },
                     {
                       label: 'GitHub',

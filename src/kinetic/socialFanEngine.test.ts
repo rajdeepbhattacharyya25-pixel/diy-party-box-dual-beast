@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   SOCIAL_FAN_CARDS,
   SOCIAL_ACCOUNT_LINKS,
+  INSTAGRAM_JOURNEY_HIGHLIGHT_URL,
   CREATOR_PROFILE_IMAGE_SRC,
   BUY_ME_A_COFFEE_URL,
   SOCIAL_JOURNEY_CAPTION,
@@ -81,6 +82,17 @@ test('Card 05 uses Buy Me a Coffee copy and live creator support URL', () => {
   assert.equal(SOCIAL_ACCOUNT_LINKS.buyMeACoffee, BUY_ME_A_COFFEE_URL);
   assert.equal(coffee.isExternal, true);
   assert.equal(coffee.isConfigured, true);
+});
+
+test('INSTAGRAM_JOURNEY_HIGHLIGHT_URL points to the full build story highlight', () => {
+  assert.equal(
+    INSTAGRAM_JOURNEY_HIGHLIGHT_URL,
+    'https://www.instagram.com/stories/highlights/18103155317053800/'
+  );
+  assert.equal(
+    SOCIAL_ACCOUNT_LINKS.instagramStoryHighlight,
+    'https://www.instagram.com/stories/highlights/18103155317053800/'
+  );
 });
 
 test('SOCIAL_JOURNEY_CAPTION preserves exact requested headline and sentence', () => {

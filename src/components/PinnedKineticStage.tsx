@@ -22,6 +22,7 @@ const SpeakerViewport3D = React.lazy(() => import('./SpeakerViewport3D'));
 const WledStudioModal = React.lazy(() => import('./WledStudioModal'));
 const FocusSpeakerCarousel = React.lazy(() => import('./FocusSpeakerCarousel'));
 const SocialFanShowcaseSection = React.lazy(() => import('./SocialFanShowcaseSection'));
+const DualBeastQrModal = React.lazy(() => import('./DualBeastQrModal'));
 import {
   SignatureMarqueeChapter,
   FloatingPartCollageChapter,
@@ -38,7 +39,7 @@ import {
   MOBILE_CHAPTER_WAYPOINTS,
   TouchVelocitySample,
 } from '../kinetic/editorialStages';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, QrCode } from 'lucide-react';
 
 interface PrecomputedHeadline {
   headline: string;
@@ -235,6 +236,44 @@ export default function PinnedKineticStage() {
   const [showWledModal, setShowWledModal] = useState<boolean>(false);
   const [showGalleryModal, setShowGalleryModal] = useState<boolean>(false);
   const [showCollageModal, setShowCollageModal] = useState<boolean>(false);
+  const [showQrModal, setShowQrModal] = useState<boolean>(false);
+
+  const handleOpen3DModal = useCallback(() => setShow3DModal(true), []);
+  const handleClose3DModal = useCallback(() => setShow3DModal(false), []);
+  const handleOpenWledModal = useCallback(() => setShowWledModal(true), []);
+  const handleCloseWledModal = useCallback(() => setShowWledModal(false), []);
+  const handleOpenGalleryModal = useCallback(() => setShowGalleryModal(true), []);
+  const handleCloseGalleryModal = useCallback(() => setShowGalleryModal(false), []);
+  const handleOpenQrModal = useCallback(() => setShowQrModal(true), []);
+  const handleCloseQrModal = useCallback(() => setShowQrModal(false), []);
+
+  const isAnyModalOpen =
+    show3DModal ||
+    showWledModal ||
+    showGalleryModal ||
+    showCollageModal ||
+    showQrModal;
+
+  // Strict modal isolation: lock background body scroll and freeze background RAF calculations
+  useEffect(() => {
+    if (!isAnyModalOpen) return;
+
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+    if (endSnapTimerRef.current !== null) {
+      window.clearTimeout(endSnapTimerRef.current);
+      endSnapTimerRef.current = null;
+    }
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isAnyModalOpen]);
 
   // Precompute word & character scatter specs for all 6 scene headlines
   const sceneHeadlines = useMemo(
@@ -465,7 +504,8 @@ export default function PinnedKineticStage() {
         show3DModal ||
         showWledModal ||
         showGalleryModal ||
-        showCollageModal
+        showCollageModal ||
+        showQrModal
       )
         return;
 
@@ -521,15 +561,19 @@ export default function PinnedKineticStage() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!preloaderReady) return;
       if (show3DModal) {
-        if (e.key === 'Escape') setShow3DModal(false);
+        if (e.key === 'Escape') handleClose3DModal();
         return;
       }
       if (showWledModal) {
-        if (e.key === 'Escape') setShowWledModal(false);
+        if (e.key === 'Escape') handleCloseWledModal();
         return;
       }
       if (showGalleryModal) {
-        if (e.key === 'Escape') setShowGalleryModal(false);
+        if (e.key === 'Escape') handleCloseGalleryModal();
+        return;
+      }
+      if (showQrModal) {
+        if (e.key === 'Escape') handleCloseQrModal();
         return;
       }
       if (showCollageModal) {
@@ -597,6 +641,7 @@ export default function PinnedKineticStage() {
     showWledModal,
     showGalleryModal,
     showCollageModal,
+    showQrModal,
     maxTimelinePos,
     animateToTimeline,
     startSmoothingLoop,
@@ -610,6 +655,7 @@ export default function PinnedKineticStage() {
       showWledModal ||
       showGalleryModal ||
       showCollageModal ||
+      showQrModal ||
       e.touches.length === 0
     )
       return;
@@ -647,6 +693,7 @@ export default function PinnedKineticStage() {
       showWledModal ||
       showGalleryModal ||
       showCollageModal ||
+      showQrModal ||
       touchStartYRef.current === null ||
       e.touches.length === 0
     )
@@ -716,7 +763,8 @@ export default function PinnedKineticStage() {
       !show3DModal &&
       !showWledModal &&
       !showGalleryModal &&
-      !showCollageModal
+      !showCollageModal &&
+      !showQrModal
     ) {
       const momentumTarget = computeTouchReleaseMomentumTarget(
         targetTimelineRef.current,
@@ -894,10 +942,10 @@ export default function PinnedKineticStage() {
       <main
         className="relative z-10 flex-1 w-full h-full overflow-clip flex items-center justify-center"
         aria-label="DIY Party Box Speaker Showcase"
-        aria-hidden={show3DModal || showWledModal || showGalleryModal}
+        aria-hidden={show3DModal || showWledModal || showGalleryModal || showQrModal}
         style={{
           visibility:
-            show3DModal || showWledModal || showGalleryModal
+            show3DModal || showWledModal || showGalleryModal || showQrModal
               ? 'hidden'
               : 'visible',
           ...(preloaderReady ||
@@ -1007,7 +1055,7 @@ export default function PinnedKineticStage() {
             {/* Bottom-Left Corner: Inspect 3D GLB (Small Pure White Rotating Speaker Outline Above Text) */}
             <button
               type="button"
-              onClick={() => setShow3DModal(true)}
+              onClick={handleOpen3DModal}
               data-testid="open-3d-inspector-btn"
               className="pointer-events-auto absolute bottom-3 left-3 sm:bottom-6 sm:left-7 group flex flex-col items-center gap-1 px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-xl border border-white/15 hover:border-white/40 bg-black/85 md:bg-black/65 hover:bg-[#0B1024]/85 md:backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.85)] transition-all cursor-pointer"
             >
@@ -1035,7 +1083,7 @@ export default function PinnedKineticStage() {
             {/* Bottom-Center Below Speaker: Minimal Editorial Visit Gallery Label */}
             <button
               type="button"
-              onClick={() => setShowGalleryModal(true)}
+              onClick={handleOpenGalleryModal}
               data-testid="open-gallery-modal-btn"
               aria-label="Visit Build Photo and Video Gallery"
               className="pointer-events-auto absolute bottom-[6.75rem] sm:bottom-7 left-1/2 -translate-x-1/2 group inline-flex items-center gap-2 px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-[0.2em] text-white hover:text-[#3B5BFF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B5BFF] rounded-md transition-colors duration-150 cursor-pointer whitespace-nowrap"
@@ -1053,7 +1101,7 @@ export default function PinnedKineticStage() {
             {/* Bottom-Right Corner: Open WLED Studio */}
             <button
               type="button"
-              onClick={() => setShowWledModal(true)}
+              onClick={handleOpenWledModal}
               data-testid="explore-wled-app-btn"
               aria-label="Open WLED Lighting Preview"
               className="pointer-events-auto absolute bottom-3 right-3 sm:bottom-6 sm:right-7 group flex flex-col items-center gap-1 px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-xl border border-[#3B5BFF]/30 hover:border-[#3B5BFF]/65 bg-black/85 md:bg-black/65 hover:bg-[#0B1024]/85 md:backdrop-blur-md shadow-[0_8px_24px_rgba(24,34,94,0.42)] transition-all cursor-pointer"
@@ -1114,8 +1162,8 @@ export default function PinnedKineticStage() {
           isVisible={timelinePos >= 3.45 && timelinePos < 5.42}
           isInteractive={timelinePos >= 3.78 && timelinePos < 5.35}
           viewportSize={viewportSize}
-          onOpen3DInspector={() => setShow3DModal(true)}
-          onOpenGallery={() => setShowGalleryModal(true)}
+          onOpen3DInspector={handleOpen3DModal}
+          onOpenGallery={handleOpenGalleryModal}
           onRevealBalconyPhoto={() => animateToTimeline(5)}
           onBackToCadOutlines={() => animateToTimeline(4)}
           onJumpToFinale={() => animateToTimeline(6)}
@@ -1152,21 +1200,62 @@ export default function PinnedKineticStage() {
                 onJumpToTop={() => animateToTimeline(0)}
                 onJumpToBuildOverview={() => animateToTimeline(4)}
                 onJumpToFooter={() => animateToTimeline(8.1)}
-                onOpenGallery={() => setShowGalleryModal(true)}
-                onOpen3DInspector={() => setShow3DModal(true)}
-                onOpenWledStudio={() => setShowWledModal(true)}
+                onOpenGallery={handleOpenGalleryModal}
+                onOpen3DInspector={handleOpen3DModal}
+                onOpenWledStudio={handleOpenWledModal}
               />
             </React.Suspense>
           )}
         </section>
       </main>
 
+      {/* Floating Header Bar & Actions (Desktop & Mobile) */}
+      {preloaderReady &&
+        !show3DModal &&
+        !showWledModal &&
+        !showGalleryModal &&
+        !showCollageModal &&
+        !showQrModal && (
+          <header
+            aria-label="DualBeast Navigation & Action Bar"
+            className="fixed top-0 inset-x-0 z-40 pointer-events-none px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between"
+          >
+            {/* Left: Brand Mark */}
+            <div className="pointer-events-auto flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-white/10 bg-[#070B19]/80 backdrop-blur-md shadow-lg">
+              <img
+                src="/favicon.svg"
+                alt="DualBeast Outline"
+                className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain"
+              />
+              <span className="font-display font-black text-[11px] sm:text-xs tracking-wider uppercase bg-gradient-to-r from-white via-[#93C5FD] to-[#3B82F6] bg-clip-text text-transparent">
+                DUALBEAST
+              </span>
+            </div>
+
+            {/* Right: Themed QR Code / Share Card Button */}
+            <button
+              type="button"
+              onClick={() => setShowQrModal(true)}
+              data-testid="open-qr-card-btn"
+              aria-label="Open Themed QR Code Card"
+              className="pointer-events-auto group flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full border border-[#3B5BFF]/40 hover:border-[#3B5BFF]/90 bg-[#070B19]/85 hover:bg-[#0E1538]/95 backdrop-blur-md shadow-[0_4px_20px_rgba(59,91,255,0.25)] transition-all cursor-pointer active:scale-95"
+            >
+              <QrCode className="w-3.5 h-3.5 text-[#93C5FD] transition-transform duration-200 group-hover:scale-110" />
+              <span className="font-mono text-[10px] sm:text-xs font-semibold tracking-wider uppercase text-white/95 group-hover:text-white">
+                QR Card
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            </button>
+          </header>
+        )}
+
       {/* Mobile-Only (< 768px) Top Progress Hairline & Non-Intrusive Chapter Stepper */}
       {preloaderReady &&
         !show3DModal &&
         !showWledModal &&
         !showGalleryModal &&
-        !showCollageModal && (
+        !showCollageModal &&
+        !showQrModal && (
           <>
             <div
               aria-hidden="true"
@@ -1237,7 +1326,7 @@ export default function PinnedKineticStage() {
                 </div>
               }
             >
-              <SpeakerViewport3D onClose={() => setShow3DModal(false)} />
+              <SpeakerViewport3D onClose={handleClose3DModal} />
             </React.Suspense>
           </div>
         </div>
@@ -1248,7 +1337,7 @@ export default function PinnedKineticStage() {
          ===================================================================== */}
       {showWledModal && (
         <React.Suspense fallback={null}>
-          <WledStudioModal onClose={() => setShowWledModal(false)} />
+          <WledStudioModal onClose={handleCloseWledModal} />
         </React.Suspense>
       )}
 
@@ -1265,10 +1354,22 @@ export default function PinnedKineticStage() {
           <React.Suspense fallback={null}>
             <FocusSpeakerCarousel
               active={true}
-              onCloseModal={() => setShowGalleryModal(false)}
+              onCloseModal={handleCloseGalleryModal}
             />
           </React.Suspense>
         </div>
+      )}
+
+      {/* =====================================================================
+          DUALBEAST THEMED QR CARD MODAL (Scan & Launch / Local Storage Sync)
+         ===================================================================== */}
+      {showQrModal && (
+        <React.Suspense fallback={null}>
+          <DualBeastQrModal
+            isOpen={showQrModal}
+            onClose={handleCloseQrModal}
+          />
+        </React.Suspense>
       )}
     </div>
   );

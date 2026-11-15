@@ -127,10 +127,11 @@ interface SpeakerViewport3DProps {
   onClose?: () => void;
 }
 
-export default function SpeakerViewport3D({ onClose }: SpeakerViewport3DProps) {
+function SpeakerViewport3DComponent({ onClose }: SpeakerViewport3DProps) {
   const canvasMountRef = useRef<HTMLDivElement | null>(null);
   const leftModelRef = useRef<BuiltSpeakerModel | null>(null);
   const rightModelRef = useRef<BuiltSpeakerModel | null>(null);
+  const buildModelForSideRef = useRef<((side: SpeakerSideId) => BuiltSpeakerModel | null) | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const activeSideRef = useRef<SpeakerSideId>('R');
   const activeViewRef = useRef<CameraPresetId>('orbit');
@@ -346,10 +347,33 @@ export default function SpeakerViewport3D({ onClose }: SpeakerViewport3DProps) {
       }
     };
 
-    let sharedTextures: ReturnType<typeof createSpeakerTextureSet> | null =
-      null;
+    let sharedTextures: ReturnType<typeof createSpeakerTextureSet> | null = null;
     let builtLeft: BuiltSpeakerModel | null = null;
     let builtRight: BuiltSpeakerModel | null = null;
+    let idlePrecacheHandle: number | null = null;
+
+    const buildModelForSide = (side: SpeakerSideId): BuiltSpeakerModel | null => {
+      if (!renderer || !sharedTextures) return null;
+      const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+      if (side === 'R') {
+        if (!builtRight) {
+          builtRight = buildSpeakerModel(maxAnisotropy, undefined, sharedTextures);
+          builtRight.root.visible = activeSideRef.current === 'R';
+          rightModelRef.current = builtRight;
+          scene.add(builtRight.root);
+        }
+        return builtRight;
+      } else {
+        if (!builtLeft) {
+          builtLeft = buildLeftSpeakerModel(maxAnisotropy, undefined, sharedTextures);
+          builtLeft.root.visible = activeSideRef.current === 'L';
+          leftModelRef.current = builtLeft;
+          scene.add(builtLeft.root);
+        }
+        return builtLeft;
+      }
+    };
+    buildModelForSideRef.current = buildModelForSide;
 
     if (renderer) {
       const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -357,26 +381,28 @@ export default function SpeakerViewport3D({ onClose }: SpeakerViewport3DProps) {
         requestRenderRef.current?.();
       });
 
-      builtLeft = buildLeftSpeakerModel(
-        maxAnisotropy,
-        undefined,
-        sharedTextures
-      );
-      builtRight = buildSpeakerModel(
-        maxAnisotropy,
-        undefined,
-        sharedTextures
-      );
-
-      builtLeft.root.visible = false;
-      builtRight.root.visible = true;
-
-      leftModelRef.current = builtLeft;
-      rightModelRef.current = builtRight;
-
-      scene.add(builtLeft.root);
-      scene.add(builtRight.root);
+      // Priority mount: build only the currently active speaker model on initial modal open
+      const initialActiveModel = buildModelForSide(activeSideRef.current);
+      if (initialActiveModel) {
+        initialActiveModel.root.visible = true;
+      }
       renderer.compile(scene, camera);
+
+      // Background pre-cache: build the secondary speaker during idle cycles (<16ms initial open)
+      const secondarySide: SpeakerSideId = activeSideRef.current === 'R' ? 'L' : 'R';
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        idlePrecacheHandle = (window as unknown as {
+          requestIdleCallback: (cb: () => void, opts: { timeout: number }) => number;
+        }).requestIdleCallback(() => {
+          buildModelForSide(secondarySide);
+          requestRenderRef.current?.();
+        }, { timeout: 1200 });
+      } else {
+        idlePrecacheHandle = window.setTimeout(() => {
+          buildModelForSide(secondarySide);
+          requestRenderRef.current?.();
+        }, 250);
+      }
     }
 
     let frameId = 0;
@@ -499,6 +525,16 @@ export default function SpeakerViewport3D({ onClose }: SpeakerViewport3DProps) {
     requestRender();
 
     return () => {
+      if (idlePrecacheHandle !== null) {
+        if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+          (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(
+            idlePrecacheHandle
+          );
+        } else {
+          clearTimeout(idlePrecacheHandle);
+        }
+      }
+      buildModelForSideRef.current = null;
       window.removeEventListener('resize', onResize);
       window.removeEventListener('pagehide', releaseWebGL);
       controls.removeEventListener('start', onControlStart);
@@ -530,14 +566,19 @@ export default function SpeakerViewport3D({ onClose }: SpeakerViewport3DProps) {
       activeSideRef.current = nextSide;
       setSpeakerSide(nextSide);
 
+      // Ensure model is built on-demand if idle pre-caching hasn't completed yet
+      buildModelForSideRef.current?.(nextSide);
+
       preloadSpeakerTurntable(nextSide, () => {
         requestRenderRef.current?.();
       });
 
       const leftModel = leftModelRef.current;
       const rightModel = rightModelRef.current;
-      if (leftModel && rightModel) {
+      if (leftModel) {
         leftModel.root.visible = nextSide === 'L';
+      }
+      if (rightModel) {
         rightModel.root.visible = nextSide === 'R';
       }
 
@@ -763,3 +804,6 @@ export default function SpeakerViewport3D({ onClose }: SpeakerViewport3DProps) {
     </div>
   );
 }
+
+const SpeakerViewport3D = React.memo(SpeakerViewport3DComponent);
+export default SpeakerViewport3D;

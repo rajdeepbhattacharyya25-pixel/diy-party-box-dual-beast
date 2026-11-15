@@ -30,8 +30,12 @@ export interface SocialFanCardConfig {
 export const BUY_ME_A_COFFEE_URL =
   'https://buymeacoffee.com/rajdeep.bhattacharyya';
 
+export const INSTAGRAM_JOURNEY_HIGHLIGHT_URL =
+  'https://www.instagram.com/stories/highlights/18103155317053800/';
+
 export const SOCIAL_ACCOUNT_LINKS = {
   instagram: 'https://www.instagram.com/_rajdeep.007_/',
+  instagramStoryHighlight: INSTAGRAM_JOURNEY_HIGHLIGHT_URL,
   github: 'https://github.com/rajdeepbhattacharyya25-pixel',
   linkedin: 'https://www.linkedin.com/in/rajdeep-bhattacharyya-497945371/',
   buyMeACoffee: BUY_ME_A_COFFEE_URL,

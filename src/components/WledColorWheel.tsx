@@ -14,11 +14,59 @@ interface WledColorWheelProps {
   size?: number;
 }
 
+// Module-level cached offscreen canvas so the 112k-pixel trigonometry disc
+// is computed only once per pixel size rather than on every render/drag frame.
+const spectrumCanvasCache = new Map<number, HTMLCanvasElement>();
+
+function getOrCreateSpectrumCanvas(pixelSize: number): HTMLCanvasElement {
+  const cached = spectrumCanvasCache.get(pixelSize);
+  if (cached) return cached;
+
+  const offscreen = document.createElement('canvas');
+  offscreen.width = pixelSize;
+  offscreen.height = pixelSize;
+  const ctx = offscreen.getContext('2d');
+  if (!ctx) return offscreen;
+
+  const img = ctx.createImageData(pixelSize, pixelSize);
+  const data = img.data;
+  const half = pixelSize / 2;
+  const radius = half - 1;
+
+  for (let py = 0; py < pixelSize; py++) {
+    for (let px = 0; px < pixelSize; px++) {
+      const dx = px - half + 0.5;
+      const dy = py - half + 0.5;
+      const dist = Math.hypot(dx, dy);
+      const idx = (py * pixelSize + px) * 4;
+
+      if (dist > radius + 0.75) {
+        data[idx + 3] = 0;
+        continue;
+      }
+
+      const sat = Math.min(1, dist / radius);
+      const hue = ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360;
+      const pxRgb = hsvToRgb({ h: hue, s: sat, v: 1 });
+      const aa = dist > radius - 0.75 ? Math.max(0, Math.min(1, radius + 0.75 - dist)) : 1;
+
+      data[idx] = pxRgb.r;
+      data[idx + 1] = pxRgb.g;
+      data[idx + 2] = pxRgb.b;
+      data[idx + 3] = Math.round(aa * 255);
+    }
+  }
+
+  ctx.putImageData(img, 0, 0);
+  spectrumCanvasCache.set(pixelSize, offscreen);
+  return offscreen;
+}
+
 /**
  * Interactive full-spectrum HSV Color Wheel rendered onto a HiDPI Canvas
  * with synchronized polar thumb handle, luminance value bar, and keyboard navigation.
  */
-export default function WledColorWheel({
+function WledColorWheelComponent({
   rgb,
   hex,
   onChange,
@@ -31,7 +79,7 @@ export default function WledColorWheel({
   const hsv = useMemo(() => rgbToHsv(rgb), [rgb]);
   const thumbOffset = useMemo(() => rgbToWheelOffset(rgb), [rgb]);
 
-  // Draw crisp HSV spectrum disc whenever size or value changes
+  // Draw crisp HSV spectrum disc using fast cached canvas blit + luminance overlay (<0.1ms)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -46,37 +94,18 @@ export default function WledColorWheel({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const img = ctx.createImageData(pixelSize, pixelSize);
-    const data = img.data;
-    const half = pixelSize / 2;
-    const radius = half - 1;
+    const baseSpectrum = getOrCreateSpectrumCanvas(pixelSize);
+    ctx.clearRect(0, 0, pixelSize, pixelSize);
+    ctx.drawImage(baseSpectrum, 0, 0);
+
     const activeVal = Math.max(0.2, hsv.v);
-
-    for (let py = 0; py < pixelSize; py++) {
-      for (let px = 0; px < pixelSize; px++) {
-        const dx = px - half + 0.5;
-        const dy = py - half + 0.5;
-        const dist = Math.hypot(dx, dy);
-        const idx = (py * pixelSize + px) * 4;
-
-        if (dist > radius + 0.75) {
-          data[idx + 3] = 0;
-          continue;
-        }
-
-        const sat = Math.min(1, dist / radius);
-        const hue = ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360;
-        const pxRgb = hsvToRgb({ h: hue, s: sat, v: activeVal });
-        const aa = dist > radius - 0.75 ? Math.max(0, Math.min(1, radius + 0.75 - dist)) : 1;
-
-        data[idx] = pxRgb.r;
-        data[idx + 1] = pxRgb.g;
-        data[idx + 2] = pxRgb.b;
-        data[idx + 3] = Math.round(aa * 255);
-      }
+    if (activeVal < 0.99) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'source-atop';
+      ctx.fillStyle = `rgba(0, 0, 0, ${1 - activeVal})`;
+      ctx.fillRect(0, 0, pixelSize, pixelSize);
+      ctx.restore();
     }
-
-    ctx.putImageData(img, 0, 0);
   }, [size, hsv.v]);
 
   const pickFromClientPoint = (clientX: number, clientY: number) => {
@@ -207,3 +236,6 @@ export default function WledColorWheel({
     </div>
   );
 }
+
+const WledColorWheel = React.memo(WledColorWheelComponent);
+export default WledColorWheel;

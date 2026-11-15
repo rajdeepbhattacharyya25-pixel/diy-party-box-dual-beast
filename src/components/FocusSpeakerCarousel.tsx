@@ -16,8 +16,29 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUp,
+  ArrowUpRight,
   X,
 } from 'lucide-react';
+import { INSTAGRAM_JOURNEY_HIGHLIGHT_URL } from '../kinetic/socialFanEngine';
+
+function InstagramMark({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  );
+}
 
 export interface FocusSpeakerCarouselProps {
   items?: FocusMediaItem[];
@@ -491,8 +512,23 @@ export default function FocusSpeakerCarousel({
           </h2>
         </div>
 
-        {/* Infinite Navigation & Close Controls */}
+        {/* Action Controls & Journey Link */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Entire Journey Instagram Highlight Link Tab */}
+          <a
+            href={INSTAGRAM_JOURNEY_HIGHLIGHT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Click here to view the entire journey on Instagram Stories"
+            title="Click here to view the entire journey"
+            data-testid="carousel-view-journey-btn"
+            className="group inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md border border-zinc-800 bg-zinc-900/90 hover:bg-zinc-800 hover:border-[#DD2A7B]/60 text-xs font-mono text-zinc-200 hover:text-white transition-all duration-200 cursor-pointer whitespace-nowrap shrink-0 shadow-sm hover:shadow-[0_0_18px_rgba(221,42,123,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#93C5FD]"
+          >
+            <InstagramMark className="w-3.5 h-3.5 text-[#DD2A7B] group-hover:scale-110 transition-transform duration-200 shrink-0" />
+            <span className="font-medium tracking-tight">View Entire Journey</span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" />
+          </a>
+
           <div className="flex items-center gap-1">
             <button
               type="button"

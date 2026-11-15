@@ -204,7 +204,7 @@ export interface WledLivePreview3DProps {
   syncEnabled: boolean;
 }
 
-export default function WledLivePreview3D({
+function WledLivePreview3DComponent({
   leftSpeaker,
   rightSpeaker,
   activeSpeakerId,
@@ -413,6 +413,9 @@ export default function WledLivePreview3D({
         );
         units[id] = unit;
         scene.add(unit.pivot);
+        if (!disposed) {
+          setReadyUnits((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
+        }
       } catch (err) {
         if (!disposed) {
           setLoadError(
@@ -422,9 +425,27 @@ export default function WledLivePreview3D({
       }
     };
 
-    // Load both GLBs once per mount so LEFT <-> RIGHT switching is instantaneous
-    void loadUnit('left');
-    void loadUnit('right');
+    // Stagger GLB parsing: load active speaker first, then queue second unit during idle/next tick
+    const firstUnit = stateRef.current.activeSpeakerId;
+    const secondUnit = firstUnit === 'left' ? 'right' : 'left';
+    void loadUnit(firstUnit).then(() => {
+      if (!disposed) {
+        if (stateRef.current.syncEnabled) {
+          void loadUnit(secondUnit);
+        } else if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+          (window as unknown as { requestIdleCallback: (cb: () => void, opts: { timeout: number }) => void }).requestIdleCallback(
+            () => {
+              if (!disposed) void loadUnit(secondUnit);
+            },
+            { timeout: 1200 }
+          );
+        } else {
+          window.setTimeout(() => {
+            if (!disposed) void loadUnit(secondUnit);
+          }, 250);
+        }
+      }
+    });
 
     const prefersReducedMotion =
       typeof window !== 'undefined' &&
@@ -566,14 +587,6 @@ export default function WledLivePreview3D({
 
       if (renderer) {
         renderer.render(scene, camera);
-        if (units.left || units.right) {
-          setReadyUnits((prev) => {
-            const nextLeft = Boolean(units.left);
-            const nextRight = Boolean(units.right);
-            if (prev.left === nextLeft && prev.right === nextRight) return prev;
-            return { left: nextLeft, right: nextRight };
-          });
-        }
         if (isSoftwareGl) {
           afterDraw(tick);
         } else {
@@ -822,3 +835,6 @@ export default function WledLivePreview3D({
     </div>
   );
 }
+
+const WledLivePreview3D = React.memo(WledLivePreview3DComponent);
+export default WledLivePreview3D;

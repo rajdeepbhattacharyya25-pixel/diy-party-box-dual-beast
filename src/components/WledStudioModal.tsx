@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Power,
   RefreshCw,
@@ -33,7 +33,7 @@ interface WledStudioModalProps {
   onClose: () => void;
 }
 
-export default function WledStudioModal({ onClose }: WledStudioModalProps) {
+function WledStudioModalComponent({ onClose }: WledStudioModalProps) {
   const [studio, setStudio] = useState<WledStudioState>(() => createInitialWledState());
   const [hexDraft, setHexDraft] = useState<string>('#3B5BFF');
 
@@ -53,31 +53,31 @@ export default function WledStudioModal({ onClose }: WledStudioModalProps) {
     [activeSpeaker.paletteId]
   );
 
-  const selectSpeaker = (id: VirtualSpeakerId) => {
+  const selectSpeaker = useCallback((id: VirtualSpeakerId) => {
     setStudio((prev) => ({
       ...prev,
       activeSpeakerId: id,
     }));
-  };
+  }, []);
 
-  const handleTogglePower = (targetId: VirtualSpeakerId) => {
+  const handleTogglePower = useCallback((targetId: VirtualSpeakerId) => {
     setStudio((prev) => {
       const nextPowered = !prev.speakers[targetId].powered;
       return applySpeakerPatch(prev, targetId, { powered: nextPowered });
     });
-  };
+  }, []);
 
-  const handleBrightnessChange = (value: number) => {
+  const handleBrightnessChange = useCallback((value: number) => {
     setStudio((prev) =>
       applySpeakerPatch(prev, prev.activeSpeakerId, { brightness: value })
     );
-  };
+  }, []);
 
-  const handleToggleSync = () => {
+  const handleToggleSync = useCallback(() => {
     setStudio((prev) => setSyncMode(prev, !prev.syncEnabled));
-  };
+  }, []);
 
-  const handleSelectQuickColor = (hex: string) => {
+  const handleSelectQuickColor = useCallback((hex: string) => {
     const parsed = parseHexColor(hex);
     if (!parsed) return;
     setHexDraft(hex.toUpperCase());
@@ -87,9 +87,9 @@ export default function WledStudioModal({ onClose }: WledStudioModalProps) {
         colorHex: hex.toUpperCase(),
       })
     );
-  };
+  }, []);
 
-  const handleHexInputChange = (value: string) => {
+  const handleHexInputChange = useCallback((value: string) => {
     setHexDraft(value);
     const parsed = parseHexColor(value);
     if (parsed) {
@@ -99,9 +99,9 @@ export default function WledStudioModal({ onClose }: WledStudioModalProps) {
         })
       );
     }
-  };
+  }, []);
 
-  const handleWheelRgbChange = (nextRgb: RgbColor) => {
+  const handleWheelRgbChange = useCallback((nextRgb: RgbColor) => {
     const nextHex = rgbToHex(nextRgb);
     setHexDraft(nextHex);
     setStudio((prev) =>
@@ -110,9 +110,9 @@ export default function WledStudioModal({ onClose }: WledStudioModalProps) {
         colorHex: nextHex,
       })
     );
-  };
+  }, []);
 
-  const handleRgbChannelChange = (channel: keyof RgbColor, rawValue: string) => {
+  const handleRgbChannelChange = useCallback((channel: keyof RgbColor, rawValue: string) => {
     const num = Number(rawValue);
     if (Number.isNaN(num)) return;
     const clamped = clampByte(num);
@@ -121,35 +121,35 @@ export default function WledStudioModal({ onClose }: WledStudioModalProps) {
       const nextRgb: RgbColor = { ...curr, [channel]: clamped };
       return applySpeakerPatch(prev, prev.activeSpeakerId, { rgb: nextRgb });
     });
-  };
+  }, []);
 
-  const handleSelectPalette = (paletteId: WledStudioState['speakers']['left']['paletteId']) => {
+  const handleSelectPalette = useCallback((paletteId: WledStudioState['speakers']['left']['paletteId']) => {
     setStudio((prev) =>
       applySpeakerPatch(prev, prev.activeSpeakerId, { paletteId })
     );
-  };
+  }, []);
 
-  const handleSelectEffect = (effectId: WledStudioState['speakers']['left']['effectId']) => {
+  const handleSelectEffect = useCallback((effectId: WledStudioState['speakers']['left']['effectId']) => {
     setStudio((prev) =>
       applySpeakerPatch(prev, prev.activeSpeakerId, { effectId })
     );
-  };
+  }, []);
 
-  const handleEffectSpeedChange = (speed: number) => {
+  const handleEffectSpeedChange = useCallback((speed: number) => {
     setStudio((prev) =>
       applySpeakerPatch(prev, prev.activeSpeakerId, { speed })
     );
-  };
+  }, []);
 
-  const handleEffectIntensityChange = (intensity: number) => {
+  const handleEffectIntensityChange = useCallback((intensity: number) => {
     setStudio((prev) =>
       applySpeakerPatch(prev, prev.activeSpeakerId, { intensity })
     );
-  };
+  }, []);
 
-  const handleTabChange = (tab: WledStudioState['activeTab']) => {
+  const handleTabChange = useCallback((tab: WledStudioState['activeTab']) => {
     setStudio((prev) => ({ ...prev, activeTab: tab }));
-  };
+  }, []);
 
   const displayedHex = hexDraft.startsWith('#') ? hexDraft : `#${hexDraft}`;
   const isHexValid = parseHexColor(hexDraft) !== null;
@@ -698,3 +698,6 @@ export default function WledStudioModal({ onClose }: WledStudioModalProps) {
     </div>
   );
 }
+
+const WledStudioModal = React.memo(WledStudioModalComponent);
+export default WledStudioModal;
