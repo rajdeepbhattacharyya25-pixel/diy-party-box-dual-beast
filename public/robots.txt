@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dualbeast.vercel.app/sitemap.xml
